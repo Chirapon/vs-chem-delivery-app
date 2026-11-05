@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#12345a">
+  <title>นำเข้ารายการจาก Excel | VS Chem</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Sarabun', sans-serif; }
+    body { background:#f1f5f9; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:.4rem; border-radius:.6rem; padding:.65rem 1rem; font-weight:700; }
+    .btn-primary { background:#1d4ed8; color:white; }
+    .btn-dark { background:#12345a; color:white; }
+    .btn-light { background:#e2e8f0; color:#1e293b; }
+    .field { width:100%; border:1px solid #cbd5e1; border-radius:.55rem; padding:.65rem; background:white; }
+  </style>
+</head>
+<body class="text-slate-800">
+  <header class="bg-[#12345a] text-white shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div><h1 class="text-xl font-extrabold">VS CHEM · นำเข้ารายการจาก Excel</h1><p class="text-sm text-blue-100">Excel / CSV / วางข้อมูลจาก Excel (TSV)</p></div>
+      <a class="btn btn-light" href="./index.html">กลับหน้าใบงาน</a>
+    </div>
+  </header>
+  <main class="max-w-6xl mx-auto p-4 sm:p-6 space-y-5">
+    <section class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 space-y-4">
+      <div>
+        <h2 class="font-extrabold text-lg text-[#12345a]">1. เลือกไฟล์หรือวางข้อมูล</h2>
+        <p class="text-sm text-slate-600 mt-1">รองรับ .xlsx, .xls, .csv และข้อมูลที่คัดลอกจาก Excel โดยใช้หัวคอลัมน์ตัวอย่าง เช่น “เลขที่เอกสารที่เกี่ยวข้อง”, “ลูกค้า”, “รายการสินค้า”, “จำนวน”, “Unit”, “Batch Att.”, “สถานที่ส่ง” และ “หมายเหตุ”</p>
+      </div>
+      <label class="block"><span class="block text-sm font-bold mb-1">ไฟล์ Excel / CSV</span><input id="fileInput" class="field" type="file" accept=".xlsx,.xls,.csv,.tsv"></label>
+      <div class="text-center text-xs text-slate-400 font-bold">หรือวางข้อมูลที่คัดลอกจาก Excel</div>
+      <label class="block"><span class="block text-sm font-bold mb-1">ข้อมูลแบบ Tab-separated</span><textarea id="pasteInput" class="field font-mono text-xs" rows="7" placeholder="วางแถวหัวตารางและข้อมูลที่คัดลอกจาก Excel ที่นี่"></textarea></label>
+      <div class="flex flex-wrap gap-2">
+        <button id="pasteBtn" class="btn btn-primary" type="button">อ่านข้อมูลที่วาง</button>
+        <button id="clearBtn" class="btn btn-light" type="button">ล้าง</button>
+      </div>
+      <p class="text-xs text-slate-500">ระบบจะจับคู่หัวคอลัมน์ตามชื่อไทย/อังกฤษ และเติมข้อมูลเอกสาร ลูกค้า สถานที่ส่ง และหมายเหตุให้แถวสินค้าที่เว้นช่องไว้ต่อเนื่องกัน</p>
+    </section>
+
+    <section id="previewPanel" class="hidden bg-white rounded-xl border border-slate-200 p-4 sm:p-5 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div><h2 class="font-extrabold text-lg text-[#12345a]">2. ตรวจสอบก่อนนำเข้า</h2><p id="previewInfo" class="text-sm text-slate-600"></p></div>
+        <button id="importBtn" class="btn btn-dark" type="button">นำเข้าและแทนที่รายการในใบงาน</button>
+      </div>
+      <p class="text-xs text-amber-800 bg-amber-50 rounded-lg p-3">การนำเข้าจะแทนที่รายการสินค้าเดิมในใบงานที่บันทึกไว้ในเบราว์เซอร์นี้ แต่จะคงข้อมูลหัวใบงานและ Checklist เดิมไว้ กรุณาตรวจตัวอย่างก่อนยืนยัน</p>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[900px] text-xs border-collapse">
+          <thead class="bg-slate-100"><tr><th class="p-2 border text-left">เลขที่เอกสาร</th><th class="p-2 border text-left">ลูกค้า</th><th class="p-2 border text-left">สินค้า</th><th class="p-2 border text-right">จำนวน</th><th class="p-2 border text-left">หน่วย</th><th class="p-2 border text-left">Batch</th><th class="p-2 border text-left">สถานที่ส่ง</th><th class="p-2 border text-left">หมายเหตุที่นำเข้า</th></tr></thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </section>
+    <div id="status" class="hidden rounded-lg p-3 text-sm" role="status" aria-live="polite"></div>
+  </main>
+<script>
+(() => {
+  'use strict';
+  const STORAGE_KEY = 'vschem_daily_dispatch_v1';
+  const $ = id => document.getElementById(id);
+  let parsedItems = [];
+  let detectedHeader = '';
+
+  const clean = value => String(value ?? '').replace(/^\s+|\s+$/g, '');
+  const keyOf = value => clean(value).toLowerCase().replace(/[\s\r\n"'“”‘’._-]+/g, '');
+  const showStatus = (message, error = false) => {
+    const el = $('status'); el.textContent = message; el.className = `rounded-lg p-3 text-sm ${error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`;
+  };
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const aliases = {
+    inv: ['เลขที่เอกสารที่เกี่ยวข้อง','เลขที่เอกสาร','เลขที่เอกสารที่เกี่ยวข้อง(inv)','documentno','relateddocument','relateddocumentno','inv','invoice'],
+    customer: ['ลูกค้า','ชื่อลูกค้า','customer','customername'],
+    product: ['รายการสินค้า','สินค้า','product','productname','item','itemdescription'],
+    qty: ['จำนวน','qty','quantity'],
+    unit: ['unit','หน่วย'],
+    batch: ['batchatt','batchno','batch','batchatt.'],
+    location: ['location','ที่เก็บ','ตำแหน่ง'],
+    destination: ['สถานที่ส่ง','ที่อยู่จัดส่ง','ที่อยู่','deliveryaddress','destination'],
+    remarks: ['หมายเหตุ','remark','remarks'],
+    bpCatalogName: ['bpcatalogname'],
+    eTax: ['dataetax','etax']
+  };
+  const normalizedAliases = Object.fromEntries(Object.entries(aliases).map(([field, names]) => [field, new Set(names.map(keyOf))]));
+
+  function mapRows(rows) {
+    const maxSearch = Math.min(rows.length, 20);
+    let headerIndex = -1, columns = {};
+    for (let r = 0; r < maxSearch; r++) {
+      const candidate = {};
+      (rows[r] || []).forEach((value, i) => {
+        const normalized = keyOf(value);
+        for (const [field, names] of Object.entries(normalizedAliases)) if (names.has(normalized)) candidate[field] = i;
+      });
+      if (candidate.product !== undefined && (candidate.qty !== undefined || candidate.inv !== undefined)) {
+        headerIndex = r; columns = candidate; break;
+      }
+    }
+    if (headerIndex < 0) throw new Error('ไม่พบแถวหัวตารางที่มีคอลัมน์ “รายการสินค้า” กรุณาตรวจไฟล์หรือชื่อหัวคอลัมน์');
+    const carry = {inv:'', customer:'', destination:'', remarks:'', eTax:''};
+    const items = [];
+    const get = (row, field) => columns[field] === undefined ? '' : clean(row[columns[field]]);
+    for (const row of rows.slice(headerIndex + 1)) {
+      const values = {};
+      for (const field of Object.keys(aliases)) values[field] = get(row, field);
+      for (const field of Object.keys(carry)) if (values[field]) carry[field] = values[field];
+      if (!values.product) continue;
+      const notes = [];
+      if (values.remarks || carry.remarks) notes.push(values.remarks || carry.remarks);
+      if (values.location) notes.push(`Location: ${values.location}`);
+      if (values.bpCatalogName) notes.push(`BP Catalog Name: ${values.bpCatalogName}`);
+      if (values.eTax || carry.eTax) notes.push(`Data E-Tax: ${values.eTax || carry.eTax}`);
+      items.push({
+        inv: values.inv || carry.inv,
+        customer: values.customer || carry.customer,
+        product: values.product,
+        qty: values.qty,
+        unit: values.unit || 'KG',
+        batch: values.batch,
+        destination: values.destination || carry.destination,
+        timeIn: '', timeOut: '', mileage: '',
+        remarks: notes.join(' | ')
+      });
+    }
+    if (!items.length) throw new Error('พบหัวตาราง แต่ไม่พบแถวที่มีรายการสินค้า');
+    detectedHeader = (rows[headerIndex] || []).map(clean).filter(Boolean).join(' · ');
+    return items;
+  }
+
+  function renderPreview(items) {
+    parsedItems = items;
+    $('previewInfo').textContent = `พบ ${items.length.toLocaleString('th-TH')} รายการสินค้า · หัวตาราง: ${detectedHeader}`;
+    $('previewBody').innerHTML = items.slice(0, 100).map(item => `<tr>
+      <td class="p-2 border">${escapeHtml(item.inv)}</td><td class="p-2 border">${escapeHtml(item.customer)}</td>
+      <td class="p-2 border">${escapeHtml(item.product)}</td><td class="p-2 border text-right">${escapeHtml(item.qty)}</td>
+      <td class="p-2 border">${escapeHtml(item.unit)}</td><td class="p-2 border">${escapeHtml(item.batch)}</td>
+      <td class="p-2 border whitespace-pre-line">${escapeHtml(item.destination)}</td><td class="p-2 border">${escapeHtml(item.remarks)}</td></tr>`).join('');
+    if (items.length > 100) $('previewBody').insertAdjacentHTML('beforeend', `<tr><td class="p-2 border text-center text-slate-500" colspan="8">แสดงตัวอย่าง 100 รายการแรก จากทั้งหมด ${items.length} รายการ</td></tr>`);
+    $('previewPanel').classList.remove('hidden');
+    $('previewPanel').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function parseAndPreview(rows) {
+    try { renderPreview(mapRows(rows)); showStatus('อ่านข้อมูลสำเร็จ ตรวจสอบตัวอย่างก่อนกดยืนยันนำเข้า'); }
+    catch (error) { parsedItems = []; $('previewPanel').classList.add('hidden'); showStatus(error.message || 'อ่านข้อมูลไม่สำเร็จ', true); }
+  }
+
+  $('fileInput').addEventListener('change', async event => {
+    const file = event.target.files?.[0]; if (!file) return;
+    try {
+      if (!window.XLSX) throw new Error('โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาตรวจการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่');
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, {type:'array', cellText:true, cellDates:true});
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      parseAndPreview(XLSX.utils.sheet_to_json(firstSheet, {header:1, raw:false, defval:''}));
+    } catch (error) { showStatus(error.message || 'เปิดไฟล์ไม่สำเร็จ', true); }
+  });
+
+  // Handle quoted fields and embedded newlines in pasted tab-separated Excel data.
+  function parseTsv(text) {
+    const rows = []; let row = [], cell = '', quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === '"') {
+        if (quoted && text[i + 1] === '"') { cell += '"'; i++; }
+        else quoted = !quoted;
+      } else if (ch === '\t' && !quoted) { row.push(cell); cell = ''; }
+      else if ((ch === '\n' || ch === '\r') && !quoted) {
+        if (ch === '\r' && text[i + 1] === '\n') i++;
+        row.push(cell); rows.push(row); row = []; cell = '';
+      } else cell += ch;
+    }
+    if (cell.length || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  $('pasteBtn').addEventListener('click', () => {
+    const text = $('pasteInput').value.trim();
+    if (!text) { showStatus('กรุณาวางข้อมูลจาก Excel ก่อน', true); return; }
+    parseAndPreview(parseTsv(text));
+  });
+  $('clearBtn').addEventListener('click', () => {
+    $('fileInput').value = ''; $('pasteInput').value = ''; $('previewPanel').classList.add('hidden'); $('status').classList.add('hidden'); parsedItems = [];
+  });
+
+  $('importBtn').addEventListener('click', () => {
+    if (!parsedItems.length) return;
+    if (!confirm(`ยืนยันนำเข้า ${parsedItems.length} รายการ และแทนที่รายการสินค้าเดิมในใบงานที่บันทึกไว้หรือไม่?`)) return;
+    try {
+      const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      existing.items = parsedItems;
+      existing.updatedAt = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+      showStatus('นำเข้ารายการแล้ว ไปยังหน้าใบงานเพื่อดูและบันทึกข้อมูลต่อ');
+      setTimeout(() => { window.location.href = './index.html'; }, 900);
+    } catch (error) {
+      showStatus('บันทึกไม่สำเร็จ กรุณาเปิดหน้านำเข้าและหน้าใบงานจากเว็บไซต์/โดเมนเดียวกัน และตรวจสอบพื้นที่จัดเก็บ', true);
+    }
+  });
+})();
+</script>
+</body>
+</html>
