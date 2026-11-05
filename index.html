@@ -3,96 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VS CHEM - Driver Delivery & Daily Dispatch App</title>
-  <!-- Tailwind CSS CDN -->
+  <meta name="theme-color" content="#12345a">
+  <title>VS Chem | Driver Delivery & Daily Dispatch</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Sarabun', sans-serif; }
+    body { background:#f1f5f9; }
+    .field { width:100%; border:1px solid #cbd5e1; border-radius:.55rem; padding:.55rem .65rem; background:#fff; color:#0f172a; outline:none; min-width:0; }
+    .field:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+    .field-label { display:block; font-size:.78rem; font-weight:700; color:#475569; margin-bottom:.3rem; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:.4rem; border-radius:.6rem; padding:.6rem .9rem; font-weight:700; transition:.15s; }
+    .btn-primary { background:#1d4ed8; color:white; } .btn-primary:hover { background:#1e40af; }
+    .btn-dark { background:#12345a; color:white; } .btn-dark:hover { background:#0b2543; }
+    .btn-light { background:#e2e8f0; color:#1e293b; } .btn-light:hover { background:#cbd5e1; }
+    .btn-danger { background:#fee2e2; color:#b91c1c; } .btn-danger:hover { background:#fecaca; }
+    .section-title { color:#12345a; font-weight:800; letter-spacing:.01em; }
+    .table-input { width:100%; min-width:90px; border:1px solid #dbe3ee; border-radius:.4rem; padding:.42rem .48rem; background:#fff; }
+    .table-input:focus { outline:2px solid #93c5fd; border-color:#2563eb; }
+    .summary-card { background:linear-gradient(135deg,#fff,#f8fafc); border:1px solid #e2e8f0; border-radius:.85rem; padding:1rem; }
+    .check-row { display:flex; gap:.65rem; align-items:flex-start; padding:.8rem; border:1px solid #e2e8f0; border-radius:.65rem; background:#fff; }
+    .check-row input { width:1.1rem; height:1.1rem; margin-top:.2rem; accent-color:#1d4ed8; flex-shrink:0; }
+    .muted { color:#64748b; }
     @media print {
-      .no-print { display: none !important; }
-      body { background: white !important; }
-      .panel { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 1rem !important; }
+      @page { size:A4 landscape; margin:9mm; }
+      body { background:white !important; font-size:10px; }
+      .no-print, .action-cell, .delete-row, #toast { display:none !important; }
+      .print-only { display:block !important; }
+      main { max-width:none !important; padding:0 !important; }
+      .panel { box-shadow:none !important; border:1px solid #cbd5e1 !important; break-inside:avoid; }
+      .field, .table-input { border:0 !important; padding:1px !important; box-shadow:none !important; background:transparent !important; appearance:none; }
+      input, textarea { color:#111827 !important; }
+      .table-wrap { overflow:visible !important; }
+      table { width:100% !important; border-collapse:collapse !important; }
+      th,td { border:1px solid #94a3b8 !important; padding:4px !important; }
+      thead { display:table-header-group; }
+      tr { break-inside:avoid; }
+      .summary-card { padding:6px !important; }
+      .section-title { color:#12345a !important; }
+      .print-break { break-before:page; }
     }
-    .field {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 0.375rem;
-      padding: 0.5rem;
-      font-size: 0.875rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .field:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-    }
-    .field-label {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #475569;
-      margin-bottom: 0.25rem;
-    }
-    .section-title {
-      font-weight: 700;
-      color: #1e293b;
-    }
-    .summary-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.5rem;
-      padding: 1rem;
-    }
-    .check-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-    }
-    .btn {
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      font-weight: 600;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-danger { background: #dc2626; color: white; }
-    .btn-danger:hover { background: #b91c1c; }
-    .btn-dark { background: #334155; color: white; }
-    .btn-dark:hover { background: #1e293b; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased p-4 sm:p-6 max-w-[1600px] mx-auto">
-
-  <!-- Header Header -->
-  <header class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-xl shadow-sm border border-slate-200 gap-4">
-    <div>
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">🚚</span>
-        <h1 class="text-xl font-extrabold text-blue-900 tracking-tight">VS CHEM</h1>
+<body>
+  <header class="bg-[#12345a] text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-2xl">🚚</div>
+        <div>
+          <div class="text-xl sm:text-2xl font-extrabold tracking-wide">VS CHEM</div>
+          <div class="text-blue-100 text-xs sm:text-sm">Driver Delivery & Daily Dispatch App</div>
+        </div>
       </div>
-      <p class="text-xs text-slate-500 font-medium">Driver Delivery & Daily Dispatch App · ใบบันทึกการส่งสินค้าประจำวัน</p>
-    </div>
-    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-      <div class="text-right">
-        <div class="text-xs text-slate-400">เลขที่ใบงาน / DOCUMENT NO.</div>
-        <div class="text-sm font-bold text-slate-700" id="displayDocNo">—</div>
+      <div class="text-left sm:text-right">
+        <div class="text-xs text-blue-200">เลขที่ใบงาน / DOCUMENT NO.</div>
+        <div id="headerDocNo" class="text-2xl font-extrabold tracking-wider">—</div>
       </div>
     </div>
   </header>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed top-5 right-5 z-50 hidden bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-all">
-    บันทึกข้อมูลเรียบร้อยแล้ว
-  </div>
+  <main class="max-w-7xl mx-auto px-3 sm:px-5 py-5 space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-print">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold text-slate-800">ใบบันทึกการส่งสินค้าประจำวัน</h1>
+        <p class="text-sm text-slate-500">Daily Delivery Record · แบบฟอร์มปฏิบัติงานขนส่ง</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-light" id="newDocBtn" type="button">＋ ใบงานใหม่</button>
+        <button class="btn btn-primary" id="saveBtn" type="button">บันทึกข้อมูล</button>
+        <button class="btn btn-dark" id="printBtn" type="button">พิมพ์ / Save PDF</button>
+      </div>
+    </div>
 
-  <main class="space-y-6">
-    <!-- Section 1: Header Information -->
     <section class="panel bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
       <div class="flex items-center justify-between mb-4">
         <h2 class="section-title text-lg">1. ข้อมูลใบงาน (Header Information)</h2>
@@ -119,24 +101,6 @@
       </div>
     </section>
 
-    <!-- Excel Import Panel -->
-    <section class="panel bg-blue-50/60 rounded-xl shadow-sm border border-blue-200 p-4 sm:p-5 no-print">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="font-bold text-blue-900 text-sm flex items-center gap-1.5">📋 นำเข้ารายการสินค้าจาก Excel</h3>
-        <span class="text-xs text-blue-600 font-medium">รองรับหลาย Order และหลายรายการสินค้า</span>
-      </div>
-      <p class="text-xs text-slate-600 mb-3">Copy ข้อมูลจาก Excel แล้ววางในช่องด้านล่างได้เลย (ลำดับคอลัมน์: INV# | ชื่อลูกค้า | สินค้า | จำนวน | หน่วย | Batch No. | สถานที่ส่ง | หมายเหตุ)</p>
-      <textarea id="excelPaste" rows="3" class="field bg-white" placeholder="วางข้อมูลที่คัดลอกมาจาก Excel ตรงนี้..."></textarea>
-      <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
-        <div class="flex items-center gap-2">
-          <button id="importExcelBtn" class="btn btn-primary text-xs py-1.5 px-3" type="button">นำเข้ารายการจาก Excel</button>
-          <button id="clearExcelBtn" class="btn bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs py-1.5 px-3" type="button">ล้างข้อมูลที่วาง</button>
-        </div>
-        <div id="importMessage" class="text-xs font-bold"></div>
-      </div>
-    </section>
-
-    <!-- Section 2: Delivery Items Table -->
     <section class="panel bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
@@ -172,7 +136,6 @@
       </div>
     </section>
 
-    <!-- Section 3: Daily Summary -->
     <section class="panel bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
       <h2 class="section-title text-lg mb-4">3. สรุปผลการขนส่ง (Daily Summary)</h2>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -184,7 +147,6 @@
       <div id="mileageWarning" class="hidden mt-3 text-sm text-red-700 bg-red-50 rounded-lg p-3">ตรวจสอบเลขไมล์: เลขไมล์กลับต้องไม่น้อยกว่าเลขไมล์ออก</div>
     </section>
 
-    <!-- Section 4: Pre-Trip Inspection -->
     <section class="panel bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
       <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
         <h2 class="section-title text-lg">4. Checklist ก่อนออกเดินทาง (Pre-Trip Inspection)</h2>
@@ -198,7 +160,6 @@
       <label class="block mt-4"><span class="field-label">หมายเหตุการตรวจสอบ / ความผิดปกติ</span><textarea id="inspectionNote" rows="2" class="field" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"></textarea></label>
     </section>
 
-    <!-- Section 5: Signatures & Administration -->
     <section class="panel bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
       <h2 class="section-title text-lg mb-4">5. การรับรองและหมายเหตุท้ายใบงาน</h2>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -206,321 +167,166 @@
         <label><span class="field-label">เวลาบันทึกข้อมูล</span><input id="savedAt" class="field bg-slate-50" readonly placeholder="ระบบจะบันทึกอัตโนมัติ"></label>
         <label><span class="field-label">สถานะใบงาน</span><select id="docStatus" class="field"><option value="Draft">ร่าง (Draft)</option><option value="In Progress">กำลังจัดส่ง (In Progress)</option><option value="Completed">เสร็จสิ้น (Completed)</option></select></label>
       </div>
-      <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-8 pt-6">
-        <div class="border-t border-slate-300 pt-2 text-center text-xs text-slate-500">ลงชื่อพนักงานขับรถ ______________________________</div>
-        <div class="border-t border-slate-300 pt-2 text-center text-xs text-slate-500">ลงชื่อผู้ตรวจสอบ / ผู้รับผิดชอบ ______________________________</div>
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-8">
+        <div class="border-t border-slate-300 pt-2 mt-8 text-center text-xs text-slate-500">ลงชื่อพนักงานขับรถ ______________________________</div>
+        <div class="border-t border-slate-300 pt-2 mt-8 text-center text-xs text-slate-500">ลงชื่อผู้ตรวจสอบ / ผู้รับผิดชอบ ______________________________</div>
       </div>
     </section>
+
+    <div class="no-print flex flex-col sm:flex-row gap-2 justify-end pb-8">
+      <button id="clearBtn" class="btn btn-danger" type="button">ล้างข้อมูลฟอร์ม</button>
+      <button id="saveBtnBottom" class="btn btn-primary" type="button">บันทึกข้อมูลใบงาน</button>
+      <button id="printBtnBottom" class="btn btn-dark" type="button">พิมพ์รายงาน / Save PDF</button>
+    </div>
+    <p class="text-center text-xs text-slate-400 pb-5">VS Chem · Driver Delivery & Daily Dispatch · ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ (LocalStorage)</p>
   </main>
 
-  <!-- Bottom Actions -->
-  <div class="no-print flex flex-col sm:flex-row gap-2 justify-end my-8">
-    <button id="clearBtn" class="btn btn-danger" type="button">ล้างข้อมูลฟอร์ม</button>
-    <button id="saveBtnBottom" class="btn btn-primary" type="button">บันทึกข้อมูลใบงาน</button>
-    <button id="printBtnBottom" class="btn btn-dark" type="button">พิมพ์รายงาน / Save PDF</button>
-  </div>
-  
-  <footer class="text-center text-xs text-slate-400 pb-5 no-print">
-    VS Chem · Driver Delivery & Daily Dispatch · ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ (LocalStorage)
-  </footer>
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity z-50"></div>
 
-  <!-- App Script -->
   <script>
-    const $ = id => document.getElementById(id);
+    (() => {
+      'use strict';
+      const STORAGE_KEY = 'vschem_daily_dispatch_v1';
+      const $ = (id) => document.getElementById(id);
+      const fields = ['docNo','dispatchDate','vehicle','driver','helpers','startMileage','endMileage','inspectionNote','recorder','savedAt','docStatus'];
+      const checks = ['checkPackaging','checkLoading','checkSecure'];
+      let toastTimer;
 
-    // Set default date to today if empty
-    if (!$('dispatchDate').value) {
-      const today = new Date().toISOString().split('T')[0];
-      $('dispatchDate').value = today;
-    }
-
-    // Add Row function
-    function addRow(data = {}) {
-      const tbody = $('itemsBody');
-      const tr = document.createElement('tr');
-      tr.className = 'item-row';
-      tr.innerHTML = `
-        <td class="p-1 border border-slate-200"><input class="field text-xs inv" value="${data.inv || ''}" placeholder="INV#"></td>
-        <td class="p-1 border border-slate-200"><input class="field text-xs customer" value="${data.customer || ''}" placeholder="ชื่อลูกค้า"></td>
-        <td class="p-1 border border-slate-200"><input class="field text-xs product" value="${data.product || ''}" placeholder="สินค้า / ขนาด"></td>
-        <td class="p-1 border border-slate-200"><input type="number" class="field text-xs qty" value="${data.qty || ''}" placeholder="0"></td>
-        <td class="p-1 border border-slate-200"><input class="field text-xs unit" value="${data.unit || 'KG'}" placeholder="KG"></td>
-        <td class="p-1 border border-slate-200"><input class="field text-xs batch" value="${data.batch || ''}" placeholder="Batch"></td>
-        <td class="p-1 border border-slate-200"><input class="field text-xs destination" value="${data.destination || ''}" placeholder="สถานที่ส่ง"></td>
-        <td class="p-1 border border-slate-200"><input type="time" class="field text-xs time-in" value="${data.timeIn || ''}"></td>
-        <td class="p-1 border border-slate-200"><input type="time" class="field text-xs time-out" value="${data.timeOut || ''}"></td>
-        <td class="p-1 border border-slate-200"><input type="number" class="field text-xs item-mileage" value="${data.mileage || ''}" placeholder="ไมล์"></td>
-        <td class="p-1 border border-slate-200"><input class="field text-xs remarks" value="${data.remarks || ''}" placeholder="หมายเหตุ"></td>
-        <td class="p-1 border border-slate-200 text-center action-cell no-print"><button type="button" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 del-row">✕</button></td>
-      `;
-
-      tr.querySelector('.del-row').addEventListener('click', () => {
-        tr.remove();
-        updateSummary();
-        saveData(true);
-      });
-
-      tr.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', () => {
-          updateSummary();
-          saveData(true);
-        });
-      });
-
-      tbody.appendChild(tr);
-      updateSummary();
-    }
-
-    $('addRowBtn').addEventListener('click', () => addRow());
-
-    // Update Calculations & Summary
-    function updateSummary() {
-      const rows = document.querySelectorAll('.item-row');
-      let totalWeight = 0;
-      let invoices = new Set();
-      let destinations = new Set();
-
-      rows.forEach(row => {
-        const inv = row.querySelector('.inv').value.trim();
-        const customer = row.querySelector('.customer').value.trim();
-        const qty = parseFloat(row.querySelector('.qty').value) || 0;
-        const unit = row.querySelector('.unit').value.trim().toUpperCase();
-        const dest = row.querySelector('.destination').value.trim();
-
-        if (inv) invoices.add(inv);
-        if (dest || customer) destinations.add(dest || customer);
-
-        if (unit === 'KG') {
-          totalWeight += qty;
-        }
-      });
-
-      const startMileage = parseFloat($('startMileage').value) || 0;
-      const endMileage = parseFloat($('endMileage').value) || 0;
-      const distance = (endMileage > startMileage) ? (endMileage - startMileage) : 0;
-
-      if (endMileage > 0 && endMileage < startMileage) {
-        $('mileageWarning').classList.remove('hidden');
-      } else {
-        $('mileageWarning').classList.add('hidden');
-      }
-
-      $('totalTrips').textContent = destinations.size;
-      $('totalWeight').textContent = totalWeight.toLocaleString();
-      $('totalDistance').textContent = distance.toLocaleString();
-      $('totalInvoices').textContent = invoices.size;
-      $('rowCount').textContent = `${rows.length} รายการ`;
-      $('displayDocNo').textContent = $('docNo').value || '—';
-
-      // Checklist status
-      const checks = document.querySelectorAll('.safety-check');
-      const checkedCount = Array.from(checks).filter(c => c.checked).length;
-      const checkStatus = $('checkStatus');
-      if (checkedCount === checks.length) {
-        checkStatus.textContent = 'ตรวจสอบครบถ้วนสมบูรณ์';
-        checkStatus.className = 'text-xs font-bold text-emerald-600';
-      } else {
-        checkStatus.textContent = `ตรวจสอบแล้ว ${checkedCount}/${checks.length} รายการ`;
-        checkStatus.className = 'text-xs font-bold text-amber-600';
-      }
-    }
-
-    document.querySelectorAll('input, select, textarea').forEach(el => {
-      el.addEventListener('input', () => {
-        updateSummary();
-        saveData(true);
-      });
-    });
-
-    // Excel Import Function
-    function importExcelData() {
-      const text = $('excelPaste').value.trim();
-      if (!text) {
-        showToast('กรุณาวางข้อมูลจาก Excel ก่อน');
-        return;
-      }
-      const rows = text.split(/\r?\n/).map(line => line.split('\t').map(v => v.trim()));
-      if (!rows.length) return;
-
-      const normalize = s => String(s || '').toLowerCase().replace(/[\s_-#./()]/g, '');
-      const aliases = {
-        inv: ['inv', 'invoice', 'invoice no', 'เลขinvoice', 'เลขที่invoice', 'order', 'orderno', 'เลขorder'],
-        customer: ['customer', 'customername', 'ชื่อลูกค้า', 'ลูกค้า'],
-        product: ['product', 'productname', 'สินค้า', 'รายการสินค้า', 'ชื่อสินค้า'],
-        qty: ['qty', 'quantity', 'จำนวน'],
-        unit: ['unit', 'หน่วย'],
-        batch: ['batch', 'batchno', 'lot', 'lotno', 'batch no'],
-        destination: ['destination', 'location', 'deliverylocation', 'สถานที่ส่ง', 'สถานที่จัดส่ง', 'จุดส่ง'],
-        remarks: ['remark', 'remarks', 'note', 'notes', 'หมายเหตุ']
+      const todayLocal = () => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       };
-
-      const header = rows[0].map(normalize);
-      const columnMap = {};
-      Object.keys(aliases).forEach(key => {
-        columnMap[key] = header.findIndex(h => aliases[key].some(a => normalize(a) === h));
-      });
-
-      const hasHeader = Object.values(columnMap).some(i => i >= 0);
-      const dataRows = hasHeader ? rows.slice(1) : rows;
-      const defaultMap = { inv: 0, customer: 1, product: 2, qty: 3, unit: 4, batch: 5, destination: 6, remarks: 7 };
-      const map = hasHeader ? columnMap : defaultMap;
-
-      const imported = [];
-      let previous = { inv: '', customer: '', destination: '' };
-
-      dataRows.forEach(cols => {
-        if (cols.every(v => !v)) return;
-        const get = key => map[key] >= 0 ? (cols[map[key]] || '') : '';
-        const item = {
-          inv: get('inv'),
-          customer: get('customer'),
-          product: get('product'),
-          qty: get('qty'),
-          unit: get('unit') || 'KG',
-          batch: get('batch'),
-          destination: get('destination'),
-          timeIn: '',
-          timeOut: '',
-          mileage: '',
-          remarks: get('remarks')
-        };
-
-        ['inv', 'customer', 'destination'].forEach(key => {
-          if (item[key]) {
-            previous[key] = item[key];
-          } else {
-            item[key] = previous[key];
-          }
-        });
-
-        if (item.product || item.inv || item.customer) {
-          imported.push(item);
-        }
-      });
-
-      if (!imported.length) {
-        $('importMessage').textContent = 'ไม่พบรายการสินค้าที่นำเข้า';
-        $('importMessage').className = 'text-sm mt-2 font-bold text-red-600';
-        return;
-      }
-
-      imported.forEach(item => addRow(item));
-      updateSummary();
-      saveData(true);
-      $('importMessage').textContent = `นำเข้าสำเร็จ ${imported.length} รายการสินค้า`;
-      $('importMessage').className = 'text-sm mt-2 font-bold text-green-700';
-      $('excelPaste').value = '';
-      showToast(`นำเข้าสำเร็จ ${imported.length} รายการ`);
-    }
-
-    $('importExcelBtn').addEventListener('click', importExcelData);
-    $('clearExcelBtn').addEventListener('click', () => {
-      $('excelPaste').value = '';
-      $('importMessage').textContent = '';
-    });
-
-    // Toast feedback helper
-    function showToast(msg) {
-      const toast = $('toast');
-      toast.textContent = msg;
-      toast.classList.remove('hidden');
-      setTimeout(() => { toast.classList.add('hidden'); }, 3000);
-    }
-
-    // Local Storage Save / Load
-    function saveData(silent = false) {
-      const headerData = {
-        docNo: $('docNo').value,
-        dispatchDate: $('dispatchDate').value,
-        vehicle: $('vehicle').value,
-        driver: $('driver').value,
-        helpers: $('helpers').value,
-        startMileage: $('startMileage').value,
-        endMileage: $('endMileage').value,
-        inspectionNote: $('inspectionNote').value,
-        recorder: $('recorder').value,
-        docStatus: $('docStatus').value,
-        checks: Array.from(document.querySelectorAll('.safety-check')).map(c => c.checked)
+      const nowTime = () => new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit',hour12:false});
+      const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const number = (v) => Number.parseFloat(v) || 0;
+      const makeDocNo = () => {
+        const d = new Date();
+        return `${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getFullYear()).slice(-2)}-01`;
       };
+      const blankItem = () => ({inv:'',customer:'',product:'',qty:'',unit:'KG',batch:'',destination:'',timeIn:'',timeOut:'',mileage:'',remarks:''});
 
-      const items = Array.from(document.querySelectorAll('.item-row')).map(row => ({
-        inv: row.querySelector('.inv').value,
-        customer: row.querySelector('.customer').value,
-        product: row.querySelector('.product').value,
-        qty: row.querySelector('.qty').value,
-        unit: row.querySelector('.unit').value,
-        batch: row.querySelector('.batch').value,
-        destination: row.querySelector('.destination').value,
-        timeIn: row.querySelector('.time-in').value,
-        timeOut: row.querySelector('.time-out').value,
-        mileage: row.querySelector('.item-mileage').value,
-        remarks: row.querySelector('.remarks').value
-      }));
-
-      const state = { header: headerData, items: items };
-      localStorage.setItem('vs_chem_dispatch_state', JSON.stringify(state));
-
-      if (!silent) {
-        $('savedAt').value = new Date().toLocaleTimeString('th-TH');
-        showToast('บันทึกข้อมูลลงในเครื่องเรียบร้อยแล้ว');
+      function showToast(message) {
+        const t = $('toast'); t.textContent = message; t.classList.remove('opacity-0');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add('opacity-0'), 2400);
       }
-    }
-
-    function loadData() {
-      const saved = localStorage.getItem('vs_chem_dispatch_state');
-      if (!saved) {
-        addRow(); // Add one empty row by default
-        return;
-      }
-      try {
-        const state = JSON.parse(saved);
-        if (state.header) {
-          $('docNo').value = state.header.docNo || '';
-          $('dispatchDate').value = state.header.dispatchDate || new Date().toISOString().split('T')[0];
-          $('vehicle').value = state.header.vehicle || '';
-          $('driver').value = state.header.driver || '';
-          $('helpers').value = state.header.helpers || '';
-          $('startMileage').value = state.header.startMileage || '';
-          $('endMileage').value = state.header.endMileage || '';
-          $('inspectionNote').value = state.header.inspectionNote || '';
-          $('recorder').value = state.header.recorder || '';
-          $('docStatus').value = state.header.docStatus || 'Draft';
-          
-          if (state.header.checks) {
-            const checks = document.querySelectorAll('.safety-check');
-            state.header.checks.forEach((val, idx) => {
-              if (checks[idx]) checks[idx].checked = val;
-            });
-          }
-        }
-
-        if (state.items && state.items.length > 0) {
-          state.items.forEach(item => addRow(item));
-        } else {
-          addRow();
-        }
+      function addRow(item = blankItem()) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-slate-100 hover:bg-slate-50 align-top';
+        const cols = [
+          ['inv','text','INV#'],['customer','text','ชื่อลูกค้า'],['product','text','สินค้า / ขนาด'],
+          ['qty','number','จำนวน'],['unit','text','หน่วย'],['batch','text','Batch No.'],
+          ['destination','text','สถานที่ส่ง']
+        ];
+        let cells = cols.map(([key,type,ph]) => `<td class="p-1 border border-slate-200"><input class="table-input" data-key="${key}" type="${type}" ${type==='number'?'min="0" step="any"':''} placeholder="${ph}" value="${escapeHtml(item[key])}"></td>`).join('');
+        cells += `<td class="p-1 border border-slate-200"><div class="flex gap-1"><input class="table-input min-w-[76px]" data-key="timeIn" placeholder="HH:MM" value="${escapeHtml(item.timeIn)}"><button type="button" data-stamp="timeIn" class="no-print rounded bg-blue-50 text-blue-700 px-2" title="บันทึกเวลาปัจจุบัน">⏱</button></div></td>`;
+        cells += `<td class="p-1 border border-slate-200"><div class="flex gap-1"><input class="table-input min-w-[76px]" data-key="timeOut" placeholder="HH:MM" value="${escapeHtml(item.timeOut)}"><button type="button" data-stamp="timeOut" class="no-print rounded bg-blue-50 text-blue-700 px-2" title="บันทึกเวลาปัจจุบัน">⏱</button></div></td>`;
+        cells += `<td class="p-1 border border-slate-200"><input class="table-input" data-key="mileage" type="number" min="0" placeholder="เลขไมล์" value="${escapeHtml(item.mileage)}"></td>`;
+        cells += `<td class="p-1 border border-slate-200"><input class="table-input min-w-[150px]" data-key="remarks" placeholder="หมายเหตุ / เงื่อนไข" value="${escapeHtml(item.remarks)}"></td>`;
+        cells += `<td class="p-1 border border-slate-200 text-center action-cell no-print"><button type="button" class="delete-row btn btn-danger !p-2" title="ลบรายการ">✕</button></td>`;
+        tr.innerHTML = cells; $('itemsBody').appendChild(tr);
+        tr.querySelectorAll('input').forEach(input => input.addEventListener('input', updateSummary));
+        tr.querySelectorAll('[data-stamp]').forEach(btn => btn.addEventListener('click', () => {
+          const key = btn.dataset.stamp; tr.querySelector(`[data-key="${key}"]`).value = nowTime(); updateSummary(); showToast('บันทึกเวลาเรียบร้อย');
+        }));
+        tr.querySelector('.delete-row').addEventListener('click', () => { tr.remove(); if (!$('itemsBody').children.length) addRow(); updateSummary(); });
         updateSummary();
-      } catch (e) {
-        console.error('Error loading saved state:', e);
-        addRow();
       }
-    }
-
-    $('saveBtnBottom').addEventListener('click', () => saveData(false));
-
-    $('clearBtn').addEventListener('click', () => {
-      if (confirm('คุณต้องการล้างข้อมูลทั้งหมดในฟอร์มนี้ใช่หรือไม่?')) {
-        localStorage.removeItem('vs_chem_dispatch_state');
-        location.reload();
+      function getItems() {
+        return [...$('itemsBody').querySelectorAll('tr')].map(tr => {
+          const item = {}; tr.querySelectorAll('[data-key]').forEach(el => item[el.dataset.key] = el.value); return item;
+        });
       }
-    });
-
-    $('printBtnBottom').addEventListener('click', () => {
-      window.print();
-    });
-
-    // Initialize on load
-    window.addEventListener('DOMContentLoaded', loadData);
+      function updateSummary() {
+        const items = getItems();
+        const weight = items.reduce((sum, x) => sum + (/^kg$/i.test((x.unit||'').trim()) ? number(x.qty) : 0), 0);
+        const start = number($('startMileage').value), end = number($('endMileage').value);
+        const distance = ($('startMileage').value !== '' && $('endMileage').value !== '' && end >= start) ? end-start : 0;
+        const destinations = new Set(items.map(x => (x.destination||'').trim().toLowerCase()).filter(Boolean));
+        const invoices = new Set(items.map(x => (x.inv || '').trim().toLowerCase()).filter(Boolean));
+        $('totalTrips').textContent = destinations.size || items.filter(x => x.inv || x.customer || x.destination).length;
+        $('totalWeight').textContent = weight.toLocaleString('en-US',{maximumFractionDigits:2});
+        $('totalDistance').textContent = distance.toLocaleString('en-US',{maximumFractionDigits:1});
+        $('totalInvoices').textContent = invoices.size;
+        $('rowCount').textContent = `${items.length} รายการ`;
+        $('mileageWarning').classList.toggle('hidden', !($('startMileage').value!=='' && $('endMileage').value!=='' && end < start));
+        const allChecked = checks.every(id => $(id).checked);
+        $('checkStatus').textContent = allChecked ? '✓ ตรวจสอบครบแล้ว' : 'ยังตรวจสอบไม่ครบ';
+        $('checkStatus').className = `text-xs font-bold ${allChecked?'text-green-700':'text-amber-600'}`;
+      }
+      function collectData() {
+        const data = {};
+        fields.forEach(id => data[id] = $(id).value);
+        checks.forEach(id => data[id] = $(id).checked);
+        data.items = getItems(); data.updatedAt = new Date().toISOString();
+        return data;
+      }
+      function applyData(data) {
+        fields.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; });
+        checks.forEach(id => $(id).checked = !!data[id]);
+        $('itemsBody').innerHTML = '';
+        (data.items?.length ? data.items : [blankItem()]).forEach(addRow);
+        $('headerDocNo').textContent = $('docNo').value || '—';
+        updateSummary();
+      }
+      function saveData(silent=false) {
+        const data = collectData();
+        if (data.startMileage && data.endMileage && number(data.endMileage) < number(data.startMileage)) {
+          showToast('เลขไมล์กลับต้องไม่น้อยกว่าเลขไมล์ออก'); return false;
+        }
+        data.savedAt = new Date().toLocaleString('th-TH');
+        $('savedAt').value = data.savedAt;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          $('headerDocNo').textContent = $('docNo').value || '—';
+          if (!silent) showToast('บันทึกข้อมูลในเครื่องนี้เรียบร้อยแล้ว');
+          return true;
+        } catch (err) {
+          showToast('บันทึกไม่สำเร็จ: พื้นที่จัดเก็บอาจเต็มหรือถูกปิดใช้งาน'); return false;
+        }
+      }
+      function loadData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) { applyData(JSON.parse(raw)); return; }
+        } catch (err) { console.warn('Cannot load saved dispatch data', err); }
+        applyData({docNo:makeDocNo(),dispatchDate:todayLocal(),docStatus:'Draft',items:[blankItem()]});
+      }
+      function newDocument() {
+        if (!confirm('สร้างใบงานใหม่? ข้อมูลปัจจุบันจะถูกแทนที่ในฟอร์มนี้ (ข้อมูลที่บันทึกไว้เดิมจะถูกเขียนทับเมื่อกดบันทึก)')) return;
+        const next = {docNo:makeDocNo(),dispatchDate:todayLocal(),docStatus:'Draft',items:[blankItem()]};
+        applyData(next); showToast('สร้างใบงานใหม่แล้ว');
+      }
+      function clearForm() {
+        if (!confirm('ยืนยันล้างข้อมูลทั้งหมดในฟอร์มและ LocalStorage?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        applyData({docNo:makeDocNo(),dispatchDate:todayLocal(),docStatus:'Draft',items:[blankItem()]});
+        showToast('ล้างข้อมูลแล้ว');
+      }
+      function printReport() {
+        if (!saveData(true)) return;
+        window.print();
+      }
+      $('addRowBtn').addEventListener('click', () => addRow());
+      ['saveBtn','saveBtnBottom'].forEach(id => $(id).addEventListener('click', () => saveData()));
+      ['printBtn','printBtnBottom'].forEach(id => $(id).addEventListener('click', printReport));
+      $('newDocBtn').addEventListener('click', newDocument);
+      $('clearBtn').addEventListener('click', clearForm);
+      [...fields, ...checks].forEach(id => {
+        $(id).addEventListener('input', () => { $('headerDocNo').textContent = $('docNo').value || '—'; updateSummary(); });
+        $(id).addEventListener('change', updateSummary);
+      });
+      loadData();
+      // บันทึกฉบับร่างอัตโนมัติเมื่อมีการแก้ไข ป้องกันข้อมูลหายจากการรีเฟรช
+      let autosaveTimer;
+      document.addEventListener('input', e => {
+        if (e.target.matches('input,textarea,select')) {
+          clearTimeout(autosaveTimer); autosaveTimer = setTimeout(() => saveData(true), 700);
+        }
+      });
+      document.addEventListener('change', e => {
+        if (e.target.matches('input,textarea,select')) saveData(true);
+      });
+    })();
   </script>
 </body>
 </html>
